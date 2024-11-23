@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Змійка</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        canvas {
+            border: 1px solid black;
+            background-color: #000;
+        }
+        #score {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <div id="score">Скорор: 0</div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scale = 20; // Розмір кожної клітинки
+        const rows = canvas.height / scale;
+        const columns = canvas.width / scale;
+        let score = 0;
+
+        let snake = [
+            { x: 5, y: 5 },
+            { x: 4, y: 5 },
+            { x: 3, y: 5 }
+        ];
+        let direction = 'RIGHT';
+        let food = { x: 10, y: 10 };
+
+        // Основна функція гри
+        function game() {
+            if (gameOver()) return;
+            
+            setTimeout(function() {
+                clearCanvas();
+                drawFood();
+                moveSnake();
+                drawSnake();
+                updateScore();
+                game();
+            }, 100);
+        }
+
+        // Очищаємо екран
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Малюємо змійку
+        function drawSnake() {
+            snake.forEach(function(segment) {
+                ctx.fillStyle = 'green';
+                ctx.fillRect(segment.x * scale, segment.y * scale, scale, scale);
+            });
+        }
+
+        // Малюємо їжу
+        function drawFood() {
+            ctx.fillStyle = 'red';
+            ctx.fillRect(food.x * scale, food.y * scale, scale, scale);
+        }
+
+        // Оновлюємо позиції змійки
+        function moveSnake() {
+            const head = { x: snake[0].x, y: snake[0].y };
+
+            if (direction === 'UP') head.y -= 1;
+            if (direction === 'DOWN') head.y += 1;
+            if (direction === 'LEFT') head.x -= 1;
+            if (direction === 'RIGHT') head.x += 1;
+
+            snake.unshift(head);
+
+            if (head.x === food.x && head.y === food.y) {
+                score++;
+                generateFood();
+            } else {
+                snake.pop();
+            }
+        }
+
+        // Перевірка на зіткнення
+        function gameOver() {
+            const head = snake[0];
+            
+            if (head.x < 0 || head.x >= columns || head.y < 0 || head.y >= rows) return true;
+
+            for (let i = 1; i < snake.length; i++) {
+                if (head.x === snake[i].x && head.y === snake[i].y) return true;
+            }
+            
+            return false;
+        }
+
+        // Генерація нової їжі
+        function generateFood() {
+            food = {
+                x: Math.floor(Math.random() * columns),
+                y: Math.floor(Math.random() * rows)
+            };
+        }
+
+        // Оновлюємо результат
+        function updateScore() {
+            document.getElementById('score').textContent = 'Скорор: ' + score;
+        }
+
+        // Обробка клавіш
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowUp' && direction !== 'DOWN') direction = 'UP';
+            if (event.key === 'ArrowDown' && direction !== 'UP') direction = 'DOWN';
+            if (event.key === 'ArrowLeft' && direction !== 'RIGHT') direction = 'LEFT';
+            if (event.key === 'ArrowRight' && direction !== 'LEFT') direction = 'RIGHT';
+        });
+
+        // Початок гри
+        game();
+    </script>
+</body>
+</html>
